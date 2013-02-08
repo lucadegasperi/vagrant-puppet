@@ -36,11 +36,15 @@ Vagrant::Config.run do |config|
   config.vm.provision :puppet do |puppet|
   
     # change fqdn to give to change the vm virtual host
-  	puppet.facter = { 
-  	  "fqdn" => "vagrant-lamp-stack", 
-  	  "hostname" => "www", 
-  	  "docroot" => '/vagrant/public'
-  	}
+    puppet.facter = { 
+      "fqdn" => "vagrant-lamp-stack", 
+      "hostname" => "www", 
+      "docroot" => "/vagrant/public",
+      "db_name" => "lamp",
+      "db_user" => "lamp",
+      "db_pass" => "lamp",
+      "db_host" => "localhost"
+    }
     
     # set the puppet manifests directory (relative to the project's root)
     puppet.manifests_path = "vagrant-puppet/manifests"
