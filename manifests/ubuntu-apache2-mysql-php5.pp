@@ -33,10 +33,10 @@ class { 'mysql::server':
   config_hash => { 'root_password' => 'root' }
 }
 
-mysql::db { 'lamp':
-    user     => 'lamp',
-    password => 'lamp',
-    host     => 'localhost',
+mysql::db { $db_name:
+    user     => $db_user,
+    password => $db_pass,
+    host     => $db_host,
     grant    => ['all'],
     charset  => 'utf8',
 }
