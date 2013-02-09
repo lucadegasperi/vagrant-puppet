@@ -7,44 +7,49 @@
 # PHP version : 5.3         #
 #############################
 
-include apache
-include php
-include mysql
+# install apache and mysql
+class{ 'apache': }
+class{ 'php': }
 
-# Apache setup
-class {'apache::mod::php': }
-
-apache::vhost { $fqdn :
-	priority => '20',
-	port => '80',
-	docroot => $docroot,
-	configure_firewall => false,
+# create a virtual host using tha data provided in the vagrantfile
+apache::vhost { $fqdn:
+  docroot  => $docroot,
+  port => '80',
+  priority => '20',
 }
 
-a2mod { 'rewrite': ensure => present; }
+# ensure mod_php and mod_rewrite are installed
+apache::module { ['php5', 'rewrite']: }
 
-# PHP Extensions
-php::module { ['xdebug', 'mysql', 'curl', 'gd'] : 
-    notify => [ Service['httpd'], ],
+# ensure other useful php modules are installed
+php::module { ['xdebug', 'mysql', 'curl', 'gd', 'mcrypt']: }
+
+# install mysql
+class { 'mysql':
+  root_password => 'root',
 }
 
-# MySQL Server
-class { 'mysql::server':
-  config_hash => { 'root_password' => 'root' }
+# create the database
+mysql::grant { $db_name:
+  mysql_privileges => 'ALL',
+  mysql_password => $db_pass,
+  mysql_db => $db_name,
+  mysql_user => $db_user,
+  mysql_host => $db_host,
+  mysql_grant_filepath => '/root/mysql',
 }
 
-mysql::db { $db_name:
-    user     => $db_user,
-    password => $db_pass,
-    host     => $db_host,
-    grant    => ['all'],
-    charset  => 'utf8',
+# set pear auto_discover to 1
+php::pear::config{ 'auto_discover':
+  value => '1',
 }
 
-# Other Packages
-$extras = ['vim', 'curl', 'phpunit']
-package { $extras : ensure => 'installed' }
+#install phpunit
+php::pear::module{ 'pear.phpunit.de/PHPUnit': 
+  use_package => 'no',
+}
 
+# ensure the docroot is a directory, that's it.
 file { $docroot:
     ensure  => 'directory',
 }
