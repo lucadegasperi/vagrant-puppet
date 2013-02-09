@@ -44,10 +44,42 @@ php::pear::config{ 'auto_discover':
   value => '1',
 }
 
-#install phpunit
+#install pear packages
 php::pear::module{ 'pear.phpunit.de/PHPUnit': 
   use_package => 'no',
 }
+
+php::pear::module{ 'pear.pdepend.org/PHP_Depend': 
+  use_package => 'no',
+}
+
+php::pear::module{ 'pear.phpmd.org/PHP_PMD': 
+  use_package => 'no',
+}
+
+php::pear::module{ 'components.ez.no/Base': 
+  use_package => 'no',
+}
+
+php::pear::module{ 'components.ez.no/ConsoleTools': 
+  use_package => 'no',
+}
+
+php::pear::module{ 'pear.php.net/PHP_CodeSniffer': 
+  use_package => 'no',
+}
+
+php::pear::module{ 'pear.symfony.com/Finder': 
+  use_package => 'no',
+}
+
+php::pear::module{ 'pear.phpunit.de/phpcpd': 
+  use_package => 'no',
+}
+
+
+
+
 
 # ensure the docroot is a directory, that's it.
 file { $docroot:
