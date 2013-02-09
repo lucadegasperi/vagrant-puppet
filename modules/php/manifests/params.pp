@@ -14,6 +14,11 @@
 #
 class php::params {
 
+  $package_devel = $::operatingsystem ? {
+    /(?i:Ubuntu|Debian|Mint)/ => 'php5-dev',
+    default                   => 'php-devel',
+  }
+
   ### Application related parameters
   $module_prefix = $::operatingsystem ? {
     /(?i:Ubuntu|Debian|Mint)/ => 'php5-',
@@ -71,6 +76,7 @@ class php::params {
   $source = ''
   $source_dir = ''
   $source_dir_purge = false
+  $augeas = false
   $template = ''
   $options = ''
   $version = 'present'

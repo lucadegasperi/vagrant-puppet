@@ -1,9 +1,24 @@
-#! /usr/bin/env ruby -S rspec
+require 'puppet'
 
-require 'spec_helper'
+# We don't need this for the basic tests we're doing
+# require 'spec_helper'
 
+# Dan mentioned that Nick recommended the function method call
+# to return the string value for the test description.
+# this will not even try the test if the function cannot be
+# loaded.
 describe Puppet::Parser::Functions.function(:validate_string) do
-  let(:scope) { PuppetlabsSpec::PuppetInternals.scope }
+
+  # Pulled from Dan's create_resources function
+  def get_scope
+    @topscope = Puppet::Parser::Scope.new
+    # This is necessary so we don't try to use the compiler to discover our parent.
+    @topscope.parent = nil
+    @scope = Puppet::Parser::Scope.new
+    @scope.compiler = Puppet::Parser::Compiler.new(Puppet::Node.new("floppy", :environment => 'production'))
+    @scope.parent = @topscope
+    @compiler = @scope.compiler
+  end
 
   describe 'when calling validate_string from puppet' do
 
@@ -11,12 +26,14 @@ describe Puppet::Parser::Functions.function(:validate_string) do
 
       it "should compile when #{the_string} is a string" do
         Puppet[:code] = "validate_string('#{the_string}')"
-        scope.compiler.compile
+        get_scope
+        @scope.compiler.compile
       end
 
       it "should compile when #{the_string} is a bare word" do
         Puppet[:code] = "validate_string(#{the_string})"
-        scope.compiler.compile
+        get_scope
+        @scope.compiler.compile
       end
 
     end
@@ -24,12 +41,14 @@ describe Puppet::Parser::Functions.function(:validate_string) do
     %w{ true false }.each do |the_string|
       it "should compile when #{the_string} is a string" do
         Puppet[:code] = "validate_string('#{the_string}')"
-        scope.compiler.compile
+        get_scope
+        @scope.compiler.compile
       end
 
       it "should not compile when #{the_string} is a bare word" do
         Puppet[:code] = "validate_string(#{the_string})"
-        expect { scope.compiler.compile }.should raise_error(Puppet::ParseError, /is not a string/)
+        get_scope
+        expect { @scope.compiler.compile }.should raise_error(Puppet::ParseError, /is not a string/)
       end
     end
 
@@ -39,7 +58,8 @@ describe Puppet::Parser::Functions.function(:validate_string) do
         $bar = 'two'
         validate_string($foo, $bar)
       ENDofPUPPETcode
-      scope.compiler.compile
+      get_scope
+      @scope.compiler.compile
     end
 
     it "should compile when an explicitly undef variable is passed (NOTE THIS MAY NOT BE DESIRABLE)" do
@@ -47,14 +67,16 @@ describe Puppet::Parser::Functions.function(:validate_string) do
         $foo = undef
         validate_string($foo)
       ENDofPUPPETcode
-      scope.compiler.compile
+      get_scope
+      @scope.compiler.compile
     end
 
     it "should compile when an undefined variable is passed (NOTE THIS MAY NOT BE DESIRABLE)" do
       Puppet[:code] = <<-'ENDofPUPPETcode'
         validate_string($foobarbazishouldnotexist)
       ENDofPUPPETcode
-      scope.compiler.compile
+      get_scope
+      @scope.compiler.compile
     end
   end
 end

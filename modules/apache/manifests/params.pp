@@ -1,93 +1,132 @@
 # Class: apache::params
 #
-# This class manages Apache parameters
+# This class defines default parameters used by the main module class apache
+# Operating Systems differences in names and paths are addressed here
 #
-# Parameters:
-# - The $user that Apache runs as
-# - The $group that Apache runs as
-# - The $apache_name is the name of the package and service on the relevant
-#   distribution
-# - The $php_package is the name of the package that provided PHP
-# - The $ssl_package is the name of the Apache SSL package
-# - The $apache_dev is the name of the Apache development libraries package
+# == Variables
 #
-# Actions:
+# Refer to apache class for the variables defined here.
 #
-# Requires:
+# == Usage
 #
-# Sample Usage:
+# This class is not intended to be used directly.
+# It may be imported or inherited by other classes
 #
 class apache::params {
 
-  $ssl           = true
-  $template      = 'apache/vhost-default.conf.erb'
-  $priority      = '25'
-  $servername    = ''
-  $serveraliases = ''
-  $auth          = false
-  $redirect_ssl  = false
-  $options       = 'Indexes FollowSymLinks MultiViews'
-  $override      = 'None'
-  $vhost_name    = '*'
-
-  if $::osfamily == 'redhat' or $::operatingsystem == 'amazon' {
-    $user                  = 'apache'
-    $group                 = 'apache'
-    $apache_name           = 'httpd'
-    $php_package           = 'php'
-    $mod_python_package    = 'mod_python'
-    $mod_wsgi_package      = 'mod_wsgi'
-    $mod_auth_kerb_package = 'mod_auth_kerb'
-    $ssl_package           = 'mod_ssl'
-    $apache_dev            = 'httpd-devel'
-    $httpd_dir             = '/etc/httpd'
-    $conf_dir              = "${httpd_dir}/conf"
-    $mod_dir               = "${httpd_dir}/mod.d"
-    $vdir                  = "${httpd_dir}/conf.d"
-    $conf_file             = 'httpd.conf'
-    $mod_packages          = {
-      'dev'        => 'httpd-devel',
-      'fcgid'      => 'mod_fcgid',
-      'perl'       => 'mod_perl',
-      'php5'       => 'php',
-      'proxy_html' => 'mod_proxy_html',
-      'python'     => 'mod_python',
-      'ssl'        => 'mod_ssl',
-      'wsgi'       => 'mod_wsgi',
-    }
-    $mod_libs              = {
-      'php5' => 'libphp5.so',
-    }
-  } elsif $::osfamily == 'debian' {
-    $user                  = 'www-data'
-    $group                 = 'www-data'
-    $apache_name           = 'apache2'
-    $php_package           = 'libapache2-mod-php5'
-    $mod_python_package    = 'libapache2-mod-python'
-    $mod_wsgi_package      = 'libapache2-mod-wsgi'
-    $mod_auth_kerb_package = 'libapache2-mod-auth-kerb'
-    $apache_dev            = ['libaprutil1-dev', 'libapr1-dev', 'apache2-prefork-dev']
-    $vdir                  = '/etc/apache2/sites-enabled/'
-    $proxy_modules         = ['proxy', 'proxy_http']
-    $mod_packages          = {
-      'dev'    => ['libaprutil1-dev', 'libapr1-dev', 'apache2-prefork-dev'],
-      'fcgid'  => 'libapache2-mod-fcgid',
-      'perl'   => 'libapache2-mod-perl2',
-      'php5'   => 'libapache2-mod-php5',
-      'python' => 'libapache2-mod-python',
-      'wsgi'   => 'libapache2-mod-wsgi',
-    }
-  } else {
-    $user                  = 'www-data'
-    $group                 = 'www-data'
-    $apache_name           = 'apache2'
-    $php_package           = 'libapache2-mod-php5'
-    $mod_python_package    = 'libapache2-mod-python'
-    $mod_wsgi_package      = 'libapache2-mod-wsgi'
-    $mod_auth_kerb_package = 'libapache2-mod-auth-kerb'
-    $ssl_package           = 'apache-ssl'
-    $apache_dev            = 'apache-dev'
-    $vdir                  = '/etc/apache2/sites-enabled/'
-    $proxy_modules         = ['proxy', 'proxy_http']
+  ### Application specific parameters
+  $package_modssl = $::operatingsystem ? {
+    /(?i:Ubuntu|Debian|Mint)/ => 'libapache-mod-ssl',
+    default                   => 'mod_ssl',
   }
+
+  ### Application related parameters
+
+  $package = $::operatingsystem ? {
+    /(?i:Ubuntu|Debian|Mint)/ => 'apache2',
+    default                   => 'httpd',
+  }
+
+  $service = $::operatingsystem ? {
+    /(?i:Ubuntu|Debian|Mint)/ => 'apache2',
+    default                   => 'httpd',
+  }
+
+  $service_status = $::operatingsystem ? {
+    default => true,
+  }
+
+  $process = $::operatingsystem ? {
+    /(?i:Ubuntu|Debian|Mint)/ => 'apache2',
+    default                   => 'httpd',
+  }
+
+  $process_args = $::operatingsystem ? {
+    default => '',
+  }
+
+  $process_user = $::operatingsystem ? {
+    /(?i:Ubuntu|Debian|Mint)/ => 'www-data',
+    default                   => 'apache',
+  }
+
+  $config_dir = $::operatingsystem ? {
+    /(?i:Ubuntu|Debian|Mint)/ => '/etc/apache2',
+    freebsd                   => '/usr/local/etc/apache20',
+    default                   => '/etc/httpd',
+  }
+
+  $config_file = $::operatingsystem ? {
+    /(?i:Ubuntu|Debian|Mint)/ => '/etc/apache2/apache2.conf',
+    freebsd                   => '/usr/local/etc/apache20/httpd.conf',
+    default                   => '/etc/httpd/conf/httpd.conf',
+  }
+
+  $config_file_mode = $::operatingsystem ? {
+    default => '0644',
+  }
+
+  $config_file_owner = $::operatingsystem ? {
+    default => 'root',
+  }
+
+  $config_file_group = $::operatingsystem ? {
+    freebsd => 'wheel',
+    default => 'root',
+  }
+
+  $config_file_init = $::operatingsystem ? {
+    /(?i:Debian|Ubuntu|Mint)/ => '/etc/default/apache2',
+    default                   => '/etc/sysconfig/httpd',
+  }
+
+  $pid_file = $::operatingsystem ? {
+    /(?i:Debian|Ubuntu|Mint)/ => '/var/run/apache2.pid',
+    default                   => '/var/run/httpd.pid',
+  }
+
+  $log_dir = $::operatingsystem ? {
+    /(?i:Debian|Ubuntu|Mint)/ => '/var/log/apache2',
+    default                   => '/var/log/httpd',
+  }
+
+  $log_file = $::operatingsystem ? {
+    /(?i:Debian|Ubuntu|Mint)/ => ['/var/log/apache2/access.log','/var/log/apache2/error.log'],
+    default                   => ['/var/log/httpd/access.log','/var/log/httpd/error.log'],
+  }
+
+  $data_dir = $::operatingsystem ? {
+    /(?i:Debian|Ubuntu|Mint)/ => '/var/www',
+    /(?i:Suse|OpenSuse)/      => '/srv/www',
+    default                   => '/var/www/html',
+  }
+
+  $port = '80'
+  $protocol = 'tcp'
+
+  # General Settings
+  $my_class = ''
+  $source = ''
+  $source_dir = ''
+  $source_dir_purge = false
+  $template = ''
+  $options = ''
+  $service_autorestart = true
+  $absent = false
+  $disable = false
+  $disableboot = false
+
+  ### General module variables that can have a site or per module default
+  $monitor = false
+  $monitor_tool = ''
+  $monitor_target = $::ipaddress
+  $firewall = false
+  $firewall_tool = ''
+  $firewall_src = '0.0.0.0/0'
+  $firewall_dst = $::ipaddress
+  $puppi = false
+  $puppi_helper = 'standard'
+  $debug = false
+  $audit_only = false
+
 }

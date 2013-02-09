@@ -1,21 +1,26 @@
 module Puppet::Parser::Functions
 
   newfunction(:validate_bool, :doc => <<-'ENDHEREDOC') do |args|
-    Validate that all passed values are either true or false. Abort catalog
-    compilation if any value fails this check.
+    Validate all passed values are true or false.  Abort catalog compilation if the
+    value does not pass the check.
 
-    The following values will pass:
+    Example:
+
+    These booleans validate
 
         $iamtrue = true
         validate_bool(true)
         validate_bool(true, true, false, $iamtrue)
 
-    The following values will fail, causing compilation to abort:
+    These strings do NOT validate and will abort catalog compilation
 
         $some_array = [ true ]
         validate_bool("false")
         validate_bool("true")
         validate_bool($some_array)
+
+    * Jeff McCune <jeff@puppetlabs.com>
+    * Dan Bode <dan@puppetlabs.com>
 
     ENDHEREDOC
 

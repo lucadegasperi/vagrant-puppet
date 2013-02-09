@@ -1,17 +1,16 @@
 module Puppet::Parser::Functions
 
   newfunction(:has_key, :type => :rvalue, :doc => <<-'ENDHEREDOC') do |args|
-    Determine if a hash has a certain key value.
+    determine if a hash has a certain key value.
 
     Example:
-
-        $my_hash = {'key_one' => 'value_one'}
-        if has_key($my_hash, 'key_two') {
-          notice('we will not reach here')
-        }
-        if has_key($my_hash, 'key_one') {
-          notice('this will be printed')
-        }
+      $my_hash = {'key_one' => 'value_one'}
+      if has_key($my_hash, 'key_two') {
+        notice('we will not reach here')
+      }
+      if has_key($my_hash, 'key_one') {
+        notice('this will be printed')
+      }
 
     ENDHEREDOC
 

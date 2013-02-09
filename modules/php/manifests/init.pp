@@ -5,6 +5,10 @@
 #
 # == Parameters
 #
+# Module specific parameters
+# [*package_devel*]
+#   Name of the php-devel package
+#
 # Standard class parameters
 # Define the general class behaviour and customizations
 #
@@ -31,7 +35,7 @@
 # [*source_dir_purge*]
 #   If set to true (default false) the existing configuration directory is
 #   mirrored with the content retrieved from source_dir
-#   (source => $source_dir , recurse => true , purge => true)
+#   (source => $source_dir , recurse => true , purge => true, force => true)
 #   Can be defined also by the (top scope) variable $php_source_dir_purge
 #
 # [*template*]
@@ -40,6 +44,12 @@
 #   Note source and template parameters are mutually exclusive: don't use both
 #   Can be defined also by the (top scope) variable $php_template
 #
+# [*augeas*]
+#   If set to true (default false), the php.ini will be managed through
+#   augeas. This will make php::pecl automatically add extensions to the
+#   php.ini.
+#   Can be defined also by the (top scope) variable $php_augeas
+#   
 # [*options*]
 #   An hash of custom options to be used in templates for arbitrary settings.
 #   Can be defined also by the (top scope) variable $php_options
@@ -125,10 +135,8 @@
 # See README for details.
 #
 #
-# == Author
-#   Romain THERRAT <romain42@gmail.com/>
-#
 class php (
+  $package_devel       = params_lookup( 'package_devel' ),
   $my_class            = params_lookup( 'my_class' ),
   $service             = params_lookup( 'service' ),
   $service_autorestart = params_lookup( 'service_autorestart' ),
@@ -136,6 +144,7 @@ class php (
   $source_dir          = params_lookup( 'source_dir' ),
   $source_dir_purge    = params_lookup( 'source_dir_purge' ),
   $template            = params_lookup( 'template' ),
+  $augeas              = params_lookup( 'augeas' ),
   $options             = params_lookup( 'options' ),
   $version             = params_lookup( 'version' ),
   $absent              = params_lookup( 'absent' ),
@@ -162,7 +171,9 @@ class php (
   $protocol            = params_lookup( 'protocol' )
   ) inherits php::params {
 
+  $bool_service_autorestart=any2bool($service_autorestart)
   $bool_source_dir_purge=any2bool($source_dir_purge)
+  $bool_augeas=any2bool($augeas)
   $bool_absent=any2bool($absent)
   $bool_monitor=any2bool($monitor)
   $bool_puppi=any2bool($puppi)
@@ -194,6 +205,16 @@ class php (
   $manage_file_replace = $php::bool_audit_only ? {
     true  => false,
     false => true,
+  }
+
+  if ($php::source and $php::template) {
+    fail ("PHP: cannot set both source and template")
+  }
+  if ($php::source and $php::bool_augeas) {
+    fail ("PHP: cannot set both source and augeas")
+  }
+  if ($php::template and $php::bool_augeas) {
+    fail ("PHP: cannot set both template and augeas")
   }
 
   $manage_file_source = $php::source ? {
@@ -234,6 +255,7 @@ class php (
       source  => $php::source_dir,
       recurse => true,
       purge   => $php::bool_source_dir_purge,
+      force   => $php::bool_source_dir_purge,
       replace => $php::manage_file_replace,
       audit   => $php::manage_audit,
     }
