@@ -12,11 +12,6 @@ class{ 'apache': }
 class{ 'php': }
 class{ 'git': }
 
-git::user{'username':
- user_name  => $git_user,
- user_email => $git_email, 
-}
-
 # create a virtual host using tha data provided in the vagrantfile
 apache::vhost { $fqdn:
   docroot  => $docroot,
