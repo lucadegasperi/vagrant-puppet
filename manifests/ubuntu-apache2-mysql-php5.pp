@@ -86,7 +86,6 @@ php::pear::module{ 'pear.phpunit.de/phpcpd':
 
 
 
-
 # ensure the docroot is a directory, that's it.
 file { $docroot:
     ensure  => 'directory',
