@@ -12,11 +12,6 @@ class{ 'apache': }
 class{ 'php': }
 class{ 'git': }
 
-git::user{'username':
- user_name  => $git_user,
- user_email => $git_email, 
-}
-
 # create a virtual host using tha data provided in the vagrantfile
 apache::vhost { $fqdn:
   docroot  => $docroot,
@@ -83,6 +78,11 @@ php::pear::module{ 'pear.phpunit.de/phpcpd':
   use_package => 'no',
 }
 
+# rapid redirecting to project's root when logging in 
+file { '/home/vagrant/.bashrc':
+  ensure => 'present',
+  content => 'cd /vagrant',
+}
 
 
 
