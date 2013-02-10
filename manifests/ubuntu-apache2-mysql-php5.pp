@@ -7,9 +7,15 @@
 # PHP version : 5.3         #
 #############################
 
-# install apache and mysql
+# install apache, php and git
 class{ 'apache': }
 class{ 'php': }
+class{ 'git': }
+
+git::user{'username':
+ user_name  => $git_user,
+ user_email => $git_email, 
+}
 
 # create a virtual host using tha data provided in the vagrantfile
 apache::vhost { $fqdn:

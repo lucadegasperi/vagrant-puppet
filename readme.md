@@ -43,7 +43,9 @@ Vagrant::Config.run do |config|
       "db_name" => "lamp",
       "db_user" => "lamp",
       "db_pass" => "lamp",
-      "db_host" => "localhost"
+      "db_host" => "localhost",
+      "git_user" => "example",
+      "git_email" => "git@example.com",
     }
     
     # set the puppet manifests directory (relative to the project's root)
