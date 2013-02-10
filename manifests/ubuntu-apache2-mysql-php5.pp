@@ -78,6 +78,11 @@ php::pear::module{ 'pear.phpunit.de/phpcpd':
   use_package => 'no',
 }
 
+# rapid redirecting to project's root when logging in 
+file { '/home/vagrant/.bashrc':
+  ensure => 'present',
+  content => 'cd /vagrant',
+}
 
 
 
