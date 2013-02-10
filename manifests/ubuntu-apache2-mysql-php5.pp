@@ -86,7 +86,6 @@ file { '/home/vagrant/.bashrc':
 
 
 
-
 # ensure the docroot is a directory, that's it.
 file { $docroot:
     ensure  => 'directory',
